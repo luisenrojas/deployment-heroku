@@ -1,25 +1,23 @@
 import express from 'express';
 import path from 'path';
 import open from 'open';
-import webpack from 'webpack';
-import config from '../webpack.config.dev';
-
+import compression from 'compression';
 
 /* eslint-disable no-console */
+
+process.env.NODE_ENV = 'production';
+
 const port = 3000;
-const server = express();
-const compiler = webpack(config);
+const app = express();
 
-server.use(require('webpack-dev-middleware')(compiler, {
-    noInfo: true,
-    publicPath: config.output.publicPath
-}));
+app.use(compression());
+app.use(express.static('dist'));
 
-server.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname, '../src/index.html'));
+app.get('/', function(req, res) {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-server.get('/users', function(req, res) {
+app.get('/users', function(req, res) {
     // Hard coding for simplicity. Pretend this hits a real database
     res.json([
         { "id": 1, "firstName": "Bob", "lastName": "Smith", "email": "bob@gmail.com" },
@@ -28,10 +26,11 @@ server.get('/users', function(req, res) {
     ]);
 });
 
-server.listen(port, function(err) {
+app.listen(port, function(err) {
     if (err) {
         console.log(err);
     } else {
+        console.log('Running on prod. Env: ', process.env.NODE_ENV);
         open('http://localhost:' + port);
     }
 });
